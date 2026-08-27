@@ -1,0 +1,35 @@
+Sabir-20M ESP32-S3 Port
+======================
+
+This repository's original source code is Copyright (c) 2026 Berat Besli and
+is licensed under the MIT License in LICENSE.
+
+Model
+-----
+
+The deployment format and runtime are designed for weights derived from
+"Sabir-20M: A Turkish Micro Language Model" by jetbabareal (2025):
+https://huggingface.co/jetbabareal/Sabir-20M
+
+The Hugging Face model card labels Sabir-20M as MIT licensed. At the time this
+notice was prepared, the model repository did not expose a separate LICENSE
+file. Model weights are not distributed in this source repository. Users who
+download or redistribute derived weights must review the upstream repository's
+then-current terms themselves.
+
+Reference implementation acknowledgement
+----------------------------------------
+
+The flash/PSRAM tiering and group-wise int4 implementation were informed by:
+https://github.com/slvDev/esp32-ai
+
+esp32-ai is Copyright (c) 2026 Viacheslav Sierbov and is distributed under the
+MIT License. Its Per-Layer Embeddings architecture is not used in this port.
+
+Training data
+-------------
+
+The Sabir-20M model card describes approximately 1.5 million tokens of Turkish
+dialogues but does not provide enough source and license detail for this project
+to make a legal-compliance representation about the training corpus.
+
