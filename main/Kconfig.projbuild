@@ -1,0 +1,27 @@
+menu "Sabir-20M runtime"
+
+config SABIR_CONTEXT_LENGTH
+    int "KV-cache context length"
+    range 16 256
+    default 64
+    help
+        64 is the conservative N16R8 default. 128 and 256 require device-side
+        PSRAM allocation and stability validation for the exact board/build.
+
+config SABIR_MAX_NEW_TOKENS
+    int "Maximum generated tokens per prompt"
+    range 1 128
+    default 48
+
+config SABIR_TEMPERATURE_MILLI
+    int "Sampling temperature x1000"
+    range 0 2000
+    default 700
+
+config SABIR_TOP_K
+    int "Top-k sampling (1 is greedy)"
+    range 1 64
+    default 20
+
+endmenu
+
