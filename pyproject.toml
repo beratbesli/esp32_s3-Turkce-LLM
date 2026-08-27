@@ -1,0 +1,27 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "sabir-esp32-tools"
+version = "0.1.0"
+description = "Reproducible Sabir-20M inspection, tokenizer conversion and int4 export tools"
+requires-python = ">=3.10"
+dependencies = [
+  "huggingface-hub>=0.25,<2",
+  "numpy>=1.26,<3",
+  "protobuf>=5,<7",
+  "safetensors>=0.4,<1",
+  "sentencepiece>=0.2,<1",
+]
+
+[project.optional-dependencies]
+test = ["pytest>=8,<10"]
+
+[tool.setuptools]
+packages = ["sabir_tools"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "-ra"
+

@@ -1,0 +1,49 @@
+# Python caches and local environments
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.venv/
+venv/
+
+# Downloaded/source model artifacts and generated deployment images
+.cache/
+artifacts/
+models/
+*.safetensors
+*.bin
+*.gguf
+*.espmodel
+*.model.bin
+*.part
+*.tmp
+
+# ESP-IDF and editor output
+build/
+sdkconfig
+sdkconfig.old
+dependencies.lock
+.vscode/
+.idea/
+
+# Credentials and local configuration
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+.hf_token
+access_token.txt
+github_token.txt
+credentials.*
+
+# OS metadata
+.DS_Store
+Thumbs.db
+Desktop.ini
+
+# Host compiler output
+*.obj
+*.exe
+*.pdb
