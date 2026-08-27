@@ -1,6 +1,6 @@
 # Sabır-20M on ESP32-S3 N16R8
 
-**Status: alpha — host-validated, firmware source complete, physical board not tested.**
+**Status: alpha — host-validated, ESP-IDF 5.5.5 CI build passing, physical board not tested.**
 
 This project ports the Turkish
 [jetbabareal/Sabir-20M](https://huggingface.co/jetbabareal/Sabir-20M)
@@ -173,6 +173,10 @@ Current host results:
 - FP32 vs Q4: cosine 0.9895328, logit RMSE 0.56047, top-10 overlap 7/10.
 - Python Q4 vs C++ Q4: same top-1 (`774`), logit RMSE 0.00000208,
   maximum absolute difference 0.00000858.
+- ESP-IDF 5.5.5 CI: successful ESP32-S3 cross-build; app binary 216,224 bytes
+  (`0x34ca0`), leaving 93% of the 3 MiB app partition free.
+
+The recorded evidence and scope are in [`docs/VALIDATION.md`](docs/VALIDATION.md).
 
 ## 5. Build and flash firmware
 
@@ -271,4 +275,3 @@ LICENSE file. Its training-data description (approximately 1.5M tokens of
 Turkish dialogues) does not provide adequate source/license detail for this
 project to assert complete legal compliance. Review upstream terms and data
 provenance before redistributing a generated model image.
-
