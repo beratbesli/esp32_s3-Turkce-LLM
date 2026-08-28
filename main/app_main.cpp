@@ -145,6 +145,9 @@ void generate(const char *prompt) {
       std::printf("Prefill başarısız.\n");
       return;
     }
+    // Inference is CPU-bound; let the idle task run between tokens so the
+    // ESP-IDF task watchdog remains useful without producing false warnings.
+    vTaskDelay(1);
   }
   std::printf("Model:");
   std::fflush(stdout);
@@ -164,6 +167,7 @@ void generate(const char *prompt) {
     std::printf("%s", piece);
     std::fflush(stdout);
     if (!sabir::forward(g_model, next, position++, &g_scratch)) break;
+    vTaskDelay(1);
   }
   const double seconds = (esp_timer_get_time() - started) / 1000000.0;
   std::printf("\n[%d yeni token, %.2f s, %.3f token/s; prefill dahil]\n",
