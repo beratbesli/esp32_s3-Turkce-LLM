@@ -28,4 +28,15 @@ jobs:
           esp_idf_version: v5.5.5
           target: esp32s3
           path: .
-
+      - name: Package flashable firmware
+        uses: actions/upload-artifact@v4
+        with:
+          name: sabir-esp32s3-firmware
+          if-no-files-found: error
+          retention-days: 14
+          path: |
+            build/bootloader/bootloader.bin
+            build/partition_table/partition-table.bin
+            build/sabir_esp32s3.bin
+            build/flash_args
+            build/flasher_args.json
