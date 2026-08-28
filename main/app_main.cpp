@@ -190,7 +190,7 @@ extern "C" void app_main() {
   char line[kPromptBytes];
   size_t length = 0;
   bool overflow = false;
-  bool skip_lf = false;
+  bool line_ended = false;
   std::printf("\nSiz> ");
   while (true) {
     const int input = std::getchar();
@@ -199,14 +199,10 @@ extern "C" void app_main() {
       continue;
     }
 
-    if (skip_lf && input == '\n') {
-      skip_lf = false;
-      continue;
-    }
-    skip_lf = false;
-
     if (input == '\r' || input == '\n') {
-      skip_lf = input == '\r';
+      // Treat CR, LF, CRLF and terminal-generated CRCRLF as one Enter key.
+      if (line_ended) continue;
+      line_ended = true;
       std::printf("\n");
       line[length] = '\0';
       if (overflow) {
@@ -219,6 +215,7 @@ extern "C" void app_main() {
       std::printf("\nSiz> ");
       continue;
     }
+    line_ended = false;
 
     if (input == '\b' || input == 0x7f) {
       if (length) {
