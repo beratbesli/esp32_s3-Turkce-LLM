@@ -8,6 +8,8 @@
 #include "esp_psram.h"
 #include "esp_random.h"
 #include "esp_timer.h"
+#include "freertos/FreeRTOS.h"
+#include "freertos/task.h"
 #include "sdkconfig.h"
 #include "sabir_model.hpp"
 #include "sabir_tokenizer.hpp"
@@ -182,11 +184,51 @@ extern "C" void app_main() {
               CONFIG_SABIR_TEMPERATURE_MILLI / 1000.0f,
               CONFIG_SABIR_TOP_K, CONFIG_SABIR_MAX_NEW_TOKENS);
   char line[kPromptBytes];
+  size_t length = 0;
+  bool overflow = false;
+  bool skip_lf = false;
+  std::printf("\nSiz> ");
   while (true) {
-    std::printf("\nSiz> ");
-    if (!std::fgets(line, sizeof(line), stdin)) continue;
-    const size_t length = std::strlen(line);
-    if (length && line[length - 1] == '\n') line[length - 1] = '\0';
-    if (line[0]) generate(line);
+    const int input = std::getchar();
+    if (input < 0) {
+      vTaskDelay(pdMS_TO_TICKS(10));
+      continue;
+    }
+
+    if (skip_lf && input == '\n') {
+      skip_lf = false;
+      continue;
+    }
+    skip_lf = false;
+
+    if (input == '\r' || input == '\n') {
+      skip_lf = input == '\r';
+      std::printf("\n");
+      line[length] = '\0';
+      if (overflow) {
+        std::printf("Prompt çok uzun; en fazla %d bayt kullanın.\n", kPromptBytes - 1);
+      } else if (length) {
+        generate(line);
+      }
+      length = 0;
+      overflow = false;
+      std::printf("\nSiz> ");
+      continue;
+    }
+
+    if (input == '\b' || input == 0x7f) {
+      if (length) {
+        --length;
+        std::printf("\b \b");
+      }
+      continue;
+    }
+
+    if (length + 1 < sizeof(line)) {
+      line[length++] = static_cast<char>(input);
+      std::putchar(input);
+    } else {
+      overflow = true;
+    }
   }
 }
