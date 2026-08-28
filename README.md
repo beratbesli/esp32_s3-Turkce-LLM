@@ -1,6 +1,7 @@
 # Sabır-20M on ESP32-S3 N16R8
 
-**Status: alpha — host-validated, ESP-IDF 5.5.5 CI build passing, physical board not tested.**
+**Status: alpha — host-validated, ESP-IDF 5.5.5 CI build passing, and tested on
+one ESP32-S3 N16R8 at context 64.**
 
 This project ports the Turkish
 [jetbabareal/Sabir-20M](https://huggingface.co/jetbabareal/Sabir-20M)
@@ -13,11 +14,13 @@ upstream safetensors or generated 10+ MiB deployment image. The current GitHub
 repository is intended to remain private until its owner deliberately changes
 that setting.
 
-> **Hardware validation disclosure:** no physical ESP32-S3 N16R8 was available
-> during this implementation. The Q4 image, Python reference and portable C++
-> runtime were validated on the host. The ESP-IDF source is prepared for CI and
-> device build, but this repository does not claim a successful on-board run or
-> measured token rate yet.
+> **Hardware validation disclosure:** commit `f9584d1` was flashed to one
+> ESP32-S3 N16R8 (ESP32-S3 revision v0.2, 16 MiB flash, 8 MiB AP octal PSRAM)
+> through a CH343 USB/UART adapter. Boot, PSRAM self-test, model CRC validation,
+> serial input and context-64 generation passed. A 48-token `Merhaba` run on the
+> immediately preceding inference-identical build took 66.14 seconds including
+> prefill (0.726 token/s). This is a single-board functional test, not a
+> stability, thermal or production qualification.
 
 ## What is implemented
 
@@ -229,9 +232,10 @@ to ordinary NFKC Unicode on the sending side when exact parity matters.
 
 ## Known limitations and expected performance
 
-- **No physical-board result yet.** Firmware cross-build CI is configured, but
-  USB behavior, PSRAM timing, thermal stability and real token speed require an
-  N16R8 board.
+- One ESP32-S3 N16R8 passed boot and a context-64 serial generation test. The
+  observed 48-token run was 0.726 token/s including prefill. Context 128/256,
+  long-duration stability, reset/brownout behavior, current draw and thermal
+  behavior remain untested.
 - Q4 changes logits and can change sampled output; the measured host similarity
   is reported above rather than described as bit-identical to FP32.
 - The 8,000-row untied output head is scanned for every generated token and the
@@ -247,9 +251,9 @@ to ordinary NFKC Unicode on the sending side when exact parity matters.
   corpus; it should not be expected to provide robust factual or reasoning
   answers.
 
-The next concrete engineering step is to run the CI firmware build, flash a
-real N16R8 board, capture boot allocation logs and a fixed-prompt transcript,
-then profile the output head and dense matvec before changing kernels.
+The next concrete engineering step is to profile the output head and dense
+matvec on the tested board, then run context-128 allocation and long-prompt
+stability tests before changing kernels.
 
 ## License, attribution and data warning
 
