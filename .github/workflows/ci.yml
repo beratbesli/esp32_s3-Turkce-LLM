@@ -4,12 +4,17 @@ on:
   push:
   pull_request:
 
+permissions:
+  contents: read
+
 jobs:
   host-tests:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-python@v5
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065 # v5
         with:
           python-version: "3.11"
           cache: pip
@@ -21,15 +26,37 @@ jobs:
   firmware-build:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          persist-credentials: false
       - name: Build ESP32-S3 firmware with ESP-IDF 5.5.5
-        uses: espressif/esp-idf-ci-action@v1
+        uses: espressif/esp-idf-ci-action@e6f5c74232b1ccd4c97ed641f1e48553853f1fd5 # v1.2.0
         with:
           esp_idf_version: v5.5.5
           target: esp32s3
           path: .
+      - name: Generate firmware checksums and build manifest
+        shell: bash
+        run: |
+          set -euo pipefail
+          files=(
+            build/bootloader/bootloader.bin
+            build/partition_table/partition-table.bin
+            build/sabir_esp32s3.bin
+            build/flash_args
+            build/flasher_args.json
+          )
+          sha256sum "${files[@]}" > build/SHA256SUMS
+          {
+            echo "repository=https://github.com/${GITHUB_REPOSITORY}"
+            echo "commit=${GITHUB_SHA}"
+            echo "workflow_run=${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID}"
+            echo "target=esp32s3"
+            echo "esp_idf_version=v5.5.5"
+            echo "source_date_utc=$(date -u +%Y-%m-%dT%H:%M:%SZ)"
+          } > build/BUILD-MANIFEST.txt
       - name: Package flashable firmware
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
         with:
           name: sabir-esp32s3-firmware
           if-no-files-found: error
@@ -40,3 +67,5 @@ jobs:
             build/sabir_esp32s3.bin
             build/flash_args
             build/flasher_args.json
+            build/SHA256SUMS
+            build/BUILD-MANIFEST.txt

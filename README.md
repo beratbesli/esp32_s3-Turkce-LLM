@@ -10,9 +10,9 @@ PSRAM. Inference, tokenization and sampling run entirely on the device after
 deployment; no network service is used.
 
 The repository contains source and reproducible conversion tools, not the
-upstream safetensors or generated 10+ MiB deployment image. The current GitHub
-repository is intended to remain private until its owner deliberately changes
-that setting.
+upstream safetensors or generated 10+ MiB deployment image. The repository is
+public, but model-derived artifacts remain excluded. Review the upstream model
+and data terms before downloading, converting, or redistributing them.
 
 > **Hardware validation disclosure:** commit `f9584d1` was flashed to one
 > ESP32-S3 N16R8 (ESP32-S3 revision v0.2, 16 MiB flash, 8 MiB AP octal PSRAM)
@@ -180,6 +180,8 @@ Current host results:
   (`0x34ca0`), leaving 93% of the 3 MiB app partition free.
 
 The recorded evidence and scope are in [`docs/VALIDATION.md`](docs/VALIDATION.md).
+The expanded hardware qualification matrix is in
+[`docs/HARDWARE_VALIDATION.md`](docs/HARDWARE_VALIDATION.md).
 
 ## 5. Build and flash firmware
 
@@ -254,6 +256,15 @@ to ordinary NFKC Unicode on the sending side when exact parity matters.
 The next concrete engineering step is to profile the output head and dense
 matvec on the tested board, then run context-128 allocation and long-prompt
 stability tests before changing kernels.
+
+## Security and releases
+
+- Read [SECURITY.md](SECURITY.md) before flashing third-party images or handling
+  model files.
+- Contribution and validation requirements are in
+  [CONTRIBUTING.md](CONTRIBUTING.md).
+- Release artifact, checksum, provenance, and hardware-evidence requirements
+  are in [docs/RELEASE.md](docs/RELEASE.md).
 
 ## License, attribution and data warning
 
