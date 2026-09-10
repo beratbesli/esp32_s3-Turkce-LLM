@@ -39,6 +39,9 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
+          # The ESP-IDF container may leave build outputs owned by root.
+          # Hand only this generated-artifact directory back to the runner.
+          sudo chown -R "$(id -u):$(id -g)" build
           files=(
             build/bootloader/bootloader.bin
             build/partition_table/partition-table.bin
