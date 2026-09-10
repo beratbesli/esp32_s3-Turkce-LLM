@@ -3,6 +3,7 @@ name: CI
 on:
   push:
   pull_request:
+  workflow_dispatch:
 
 permissions:
   contents: read
@@ -72,3 +73,36 @@ jobs:
             build/flasher_args.json
             build/SHA256SUMS
             build/BUILD-MANIFEST.txt
+
+  publish-release:
+    name: Publish firmware release assets
+    if: startsWith(github.ref, 'refs/tags/')
+    needs: [host-tests, firmware-build]
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
+        with:
+          name: sabir-esp32s3-firmware
+          path: release-assets
+      - name: Publish CI-built firmware bundle
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          test -s release-assets/build/sabir_esp32s3.bin
+          test -s release-assets/build/bootloader/bootloader.bin
+          test -s release-assets/build/partition_table/partition-table.bin
+          gh release view "$GITHUB_REF_NAME" --repo "$GITHUB_REPOSITORY" >/dev/null 2>&1 || \
+            gh release create "$GITHUB_REF_NAME" --repo "$GITHUB_REPOSITORY" \
+              --title "Sabir ESP32-S3 $GITHUB_REF_NAME" --generate-notes
+          gh release upload "$GITHUB_REF_NAME" \
+            release-assets/build/sabir_esp32s3.bin \
+            release-assets/build/bootloader/bootloader.bin \
+            release-assets/build/partition_table/partition-table.bin \
+            release-assets/build/flash_args \
+            release-assets/build/flasher_args.json \
+            release-assets/build/SHA256SUMS \
+            release-assets/build/BUILD-MANIFEST.txt \
+            --repo "$GITHUB_REPOSITORY" --clobber
