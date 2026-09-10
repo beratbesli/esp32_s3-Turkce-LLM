@@ -91,18 +91,18 @@ jobs:
           GH_TOKEN: ${{ github.token }}
         run: |
           set -euo pipefail
-          test -s release-assets/build/sabir_esp32s3.bin
-          test -s release-assets/build/bootloader/bootloader.bin
-          test -s release-assets/build/partition_table/partition-table.bin
+          test -s release-assets/sabir_esp32s3.bin
+          test -s release-assets/bootloader/bootloader.bin
+          test -s release-assets/partition_table/partition-table.bin
           gh release view "$GITHUB_REF_NAME" --repo "$GITHUB_REPOSITORY" >/dev/null 2>&1 || \
             gh release create "$GITHUB_REF_NAME" --repo "$GITHUB_REPOSITORY" \
               --title "Sabir ESP32-S3 $GITHUB_REF_NAME" --generate-notes
           gh release upload "$GITHUB_REF_NAME" \
-            release-assets/build/sabir_esp32s3.bin \
-            release-assets/build/bootloader/bootloader.bin \
-            release-assets/build/partition_table/partition-table.bin \
-            release-assets/build/flash_args \
-            release-assets/build/flasher_args.json \
-            release-assets/build/SHA256SUMS \
-            release-assets/build/BUILD-MANIFEST.txt \
+            release-assets/sabir_esp32s3.bin \
+            release-assets/bootloader/bootloader.bin \
+            release-assets/partition_table/partition-table.bin \
+            release-assets/flash_args \
+            release-assets/flasher_args.json \
+            release-assets/SHA256SUMS \
+            release-assets/BUILD-MANIFEST.txt \
             --repo "$GITHUB_REPOSITORY" --clobber
