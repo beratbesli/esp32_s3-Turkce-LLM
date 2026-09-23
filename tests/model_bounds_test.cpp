@@ -1,5 +1,5 @@
-#include <cassert>
 #include <cstdint>
+#include <cstdlib>
 #include <cstdio>
 #include <cstring>
 #include <vector>
@@ -65,8 +65,11 @@ void expect_error(const std::vector<uint8_t> &image, size_t available,
                   const char *expected) {
   sabir::Model model;
   const char *error = nullptr;
-  assert(!sabir::load_model(image.data(), available, &model, &error));
-  assert(error && std::strcmp(error, expected) == 0);
+  if (sabir::load_model(image.data(), available, &model, &error) ||
+      !error || std::strcmp(error, expected) != 0) {
+    std::fprintf(stderr, "expected %s, got %s\n", expected, error ? error : "success");
+    std::abort();
+  }
 }
 
 int main() {
