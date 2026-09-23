@@ -172,14 +172,19 @@ def write_image(path: Path, config: dict[str, int], records: Iterable[TensorReco
 
 def read_image(path: Path) -> tuple[ImageHeader, list[ImageTensor]]:
     with path.open("rb") as stream:
-        values = HEADER.unpack(stream.read(HEADER.size))
+        header_bytes = stream.read(HEADER.size)
+        if len(header_bytes) != HEADER.size:
+            raise ValueError("truncated model header")
+        values = HEADER.unpack(header_bytes)
         (magic, version, header_size, flags, n_layer, n_embd, n_head, block_size,
          vocab_size, group_size, count, entry_size, crc, directory_offset,
          data_offset, image_size) = values
         if magic != MAGIC or version != VERSION or header_size != HEADER.size or entry_size != ENTRY.size:
             raise ValueError("unsupported or corrupt Sabir model image")
         actual_size = path.stat().st_size
-        if image_size > actual_size or directory_offset + count * ENTRY.size > data_offset:
+        if not (HEADER.size <= directory_offset <= data_offset <= image_size <= actual_size):
+            raise ValueError("model-image offsets exceed file")
+        if count > 256 or count * ENTRY.size > data_offset - directory_offset:
             raise ValueError("model-image offsets exceed file")
         stream.seek(data_offset)
         computed = 0
@@ -195,12 +200,19 @@ def read_image(path: Path) -> tuple[ImageHeader, list[ImageTensor]]:
         tensors: list[ImageTensor] = []
         stream.seek(directory_offset)
         for _ in range(count):
-            raw = ENTRY.unpack(stream.read(ENTRY.size))
+            raw_bytes = stream.read(ENTRY.size)
+            if len(raw_bytes) != ENTRY.size:
+                raise ValueError("truncated model directory")
+            raw = ENTRY.unpack(raw_bytes)
             name = raw[0].split(b"\0", 1)[0].decode("ascii")
             dtype, ndim = raw[1], raw[2]
             shape = tuple(int(x) for x in raw[4:8][:ndim])
             data_at, data_bytes, aux_at, aux_bytes = raw[8:12]
-            if data_at + data_bytes > image_size or (aux_bytes and aux_at + aux_bytes > image_size):
+            if (data_at < data_offset or data_at % ALIGNMENT or
+                    data_at + data_bytes > image_size or
+                    (aux_bytes == 0 and aux_at != 0) or
+                    (aux_bytes and (aux_at < data_offset or aux_at % ALIGNMENT or
+                                    aux_at + aux_bytes > image_size))):
                 raise ValueError(f"tensor {name} exceeds model image")
             tensors.append(ImageTensor(name, dtype, shape, data_at, data_bytes, aux_at, aux_bytes))
     header = ImageHeader(flags, n_layer, n_embd, n_head, block_size, vocab_size,
