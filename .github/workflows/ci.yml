@@ -23,6 +23,7 @@ jobs:
       - run: python -m pytest -q
       - run: cmake -S host -B build-host -DCMAKE_BUILD_TYPE=Release
       - run: cmake --build build-host --parallel
+      - run: ./build-host/sabir_model_bounds_test
 
   firmware-build:
     runs-on: ubuntu-latest
