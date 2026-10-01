@@ -8,7 +8,7 @@ version = "0.1.0"
 description = "Reproducible Sabir-20M inspection, tokenizer conversion and int4 export tools"
 requires-python = ">=3.10"
 dependencies = [
-  "huggingface-hub>=0.25,<2",
+  "huggingface-hub>=0.25,<3",
   "numpy>=1.26,<3",
   "protobuf>=5,<8",
   "safetensors>=0.4,<1",
