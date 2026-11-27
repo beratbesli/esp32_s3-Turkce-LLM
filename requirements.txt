@@ -1,0 +1,5 @@
+huggingface-hub>=0.25,<3
+numpy>=1.26,<3
+protobuf>=5,<8
+safetensors>=0.4,<1
+sentencepiece>=0.2,<1
