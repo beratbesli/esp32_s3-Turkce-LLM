@@ -8,9 +8,18 @@ add_executable(sabir_host_verify
 )
 target_include_directories(sabir_host_verify PRIVATE ../components/sabir_runtime/include)
 target_compile_features(sabir_host_verify PRIVATE cxx_std_17)
+
+add_executable(sabir_model_bounds_test
+    ../tests/model_bounds_test.cpp
+    ../components/sabir_runtime/sabir_model.cpp
+)
+target_include_directories(sabir_model_bounds_test PRIVATE ../components/sabir_runtime/include)
+target_compile_features(sabir_model_bounds_test PRIVATE cxx_std_17)
 if(MSVC)
   target_compile_options(sabir_host_verify PRIVATE /O2 /utf-8)
+  target_compile_options(sabir_model_bounds_test PRIVATE /O2 /utf-8)
 else()
   target_compile_options(sabir_host_verify PRIVATE -O3 -Wall -Wextra)
+  target_compile_options(sabir_model_bounds_test PRIVATE -O2 -Wall -Wextra -Werror)
 endif()
 

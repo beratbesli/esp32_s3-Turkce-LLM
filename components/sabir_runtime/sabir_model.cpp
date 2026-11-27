@@ -187,16 +187,34 @@ bool load_model(const uint8_t *image, size_t available_bytes, Model *model,
   if (header.version != kFormatVersion || header.header_bytes != sizeof(ImageHeaderV1) ||
       header.directory_entry_bytes != sizeof(DirectoryEntryV1)) return fail("unsupported model format");
   if (header.n_layer != 8 || header.n_embd != 384 || header.n_head != 6 ||
-      header.block_size != 256 || header.vocab_size != 8000 || header.group_size == 0)
+      header.block_size != 256 || header.vocab_size != 8000 ||
+      header.group_size == 0 || header.group_size > header.n_embd)
     return fail("unexpected Sabir architecture");
-  if (header.image_size > available_bytes ||
+  if (header.image_size < sizeof(ImageHeaderV1) ||
+      header.image_size > available_bytes ||
+      header.directory_offset < header.header_bytes ||
+      header.data_offset > header.image_size ||
+      header.tensor_count > 256 ||
       !range_ok(header.directory_offset,
                 static_cast<uint64_t>(header.tensor_count) * sizeof(DirectoryEntryV1),
                 header.data_offset)) return fail("invalid model directory");
 
   Directory directory{image, static_cast<size_t>(header.image_size),
-                      reinterpret_cast<const DirectoryEntryV1 *>(image + header.directory_offset),
+                      reinterpret_cast<const DirectoryEntryV1 *>(
+                          image + static_cast<size_t>(header.directory_offset)),
                       header.tensor_count, static_cast<int>(header.group_size)};
+  for (uint32_t index = 0; index < directory.count; ++index) {
+    const DirectoryEntryV1 &entry = directory.entries[index];
+    if (entry.data_offset < header.data_offset ||
+        !range_ok(entry.data_offset, entry.data_bytes, directory.bytes) ||
+        (entry.aux_bytes == 0 && entry.aux_offset != 0) ||
+        (entry.aux_bytes != 0 &&
+         (entry.aux_offset < header.data_offset ||
+          !range_ok(entry.aux_offset, entry.aux_bytes, directory.bytes))) ||
+        (entry.data_offset & 63u) != 0 ||
+        (entry.aux_bytes != 0 && (entry.aux_offset & 63u) != 0))
+      return fail("invalid tensor range");
+  }
   model->layers = header.n_layer;
   model->embedding = header.n_embd;
   model->heads = header.n_head;
